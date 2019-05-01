@@ -1,0 +1,20 @@
+resolver: ghc-8.6.5
+
+packages:
+- .
+
+extra-deps:
+- random-1.1
+- Euterpea-2.0.6
+- HCodecs-0.5.1
+- PortMidi-0.1.6.1
+- arrows-0.4.4.2
+- heap-1.0.4
+- stm-2.5.0.0
+- QuickCheck-2.12.6.1
+- Stream-0.4.7.2
+- semigroups-0.18.5
+- erf-2.0.0.0
+- lazysmallcheck-0.6
+- tf-random-0.5
+- primitive-0.6.4.0
