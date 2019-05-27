@@ -6,6 +6,8 @@ module Music
   ( -- euterpea
     Music(..), pattern Note', pattern Rest', Dur, Pitch, PitchClass(..), Octave
   , Music1, Note1, ToMusic1, toMusic1
+  , StdLoudness(..), setDynamic
+  , tempo
   , wn, hn, qn, sn, en, tn, line1, chord1, pitch, absPitch
   , play, playDev, writeToMidiFile
   , (%), (//)
@@ -17,12 +19,22 @@ module Music
   , AbstractScale, Scale, SemiScale
   , (~>), (<~), (^.), (^^^) , (%>), (<|) , (#) , (~~) , (=|)
   , invertChord, invertScale, mode
-  , mi, maj, dim, aug, m7, m7b5
+  , allOctaves
+
+  , allChords
+  , maj, mi, dim, aug, majb5, mis5, sus4, sus4s5, d7sus4, maj6, m6, maj7, m7
+  , d7, dim7, m7b5, mmaj7, maj9, m9, d9, d7b5, d7s5, d7b9, d7s9
+  , d7b5b9, d7b5s9, d7s5b9, d7s5s9
   , sus4, d7sus4, maj7, mmaj7
-  , major, minor, harmonicMinor, japanese, arabian, romanian, byzantine
-  , ionian, dorian, phrygian, lydian, mixolydian, aeolian, locrian
-  , altered, wholeTone, halfDiminished, melodicMinor
-  , allScales, allChords, allOctaves
+
+  , allScales
+  , major, pentatonicMajor, ionian, dorian, phrygian, lydian, mixolydian, aeolian
+  , locrian, minor, harmonicMinor, melodicMinor, pentatonicMinor, blues
+  , bebopDominant, bebopDorian, bebopMajor, bebopMelodicMinor, bebopHarmonicMinor
+  , altered, wholeTone, halfDiminished, flamenco, persian, romanian, arabian
+  , japanese, hungarian, jewish, byzantine, raga
+  , doubleHarmonicMajor, lydian_s2s6, ultraphrygian, gypsyMinor, oriental
+  , ionian_s2s5, locrian_bb3bb7, phrygianDominant, harmonicMajor
   )
   where
 
@@ -32,6 +44,8 @@ import qualified Data.Ratio as R
 
 import Euterpea ( Music(..), Primitive(..), Dur, Pitch, PitchClass(..), Octave
                 , Music1, ToMusic1, Note1, toMusic1
+                , Control(..), PhraseAttribute(..), Dynamic(..), StdLoudness(..)
+                , tempo
                 , wn, hn, qn, sn, en, tn
                 , line1, chord1, pitch, absPitch, transpose, trans
                 , play, playDev, exportMidiFile
@@ -42,9 +56,14 @@ import Euterpea ( Music(..), Primitive(..), Dur, Pitch, PitchClass(..), Octave
 ------------------------------------ Types -------------------------------------
 --------------------------------------------------------------------------------
 
+setDynamic :: StdLoudness -> Music a -> Music a
+setDynamic d = Modify (Phrase [Dyn $ StdLoudness d])
+
 -- | Write `Music` to MIDI file.
-writeToMidiFile :: ToMusic1 a => FilePath -> Music a -> IO ()
-writeToMidiFile path = exportMidiFile path . toMidi . perform . toMusic1
+writeToMidiFile :: ToMusic1 a => FilePath -> Dur -> Music a -> IO ()
+writeToMidiFile path d = exportMidiFile path          -- write to disk
+                       . toMidi . perform . toMusic1  -- convert to MIDI
+                       . tempo d                      -- set tempo
 
 pattern Note' :: Dur -> t -> Music t
 pattern Note' d x = Prim (Note d x)
@@ -201,7 +220,9 @@ allScales =
   , locrian, minor, harmonicMinor, melodicMinor, pentatonicMinor, blues
   , bebopDominant, bebopDorian, bebopMajor, bebopMelodicMinor, bebopHarmonicMinor
   , altered, wholeTone, halfDiminished, flamenco, persian, romanian, arabian
-  , japanese, hungarian, jewish, byzantine, oriental, raga
+  , japanese, hungarian, jewish, byzantine, raga
+  , doubleHarmonicMajor, lydian_s2s6, ultraphrygian, gypsyMinor, oriental
+  , ionian_s2s5, locrian_bb3bb7, phrygianDominant, harmonicMajor
   ] :: [AbstractScale]
 
 invertScale :: AbstractScale -> AbstractScale
@@ -246,10 +267,19 @@ japanese = [P1, M2, P4, A4, Mi6, M6, M7]
 hungarian = [P1, M2, Mi3, A4, P5, Mi6, M7]
 jewish = [P1, Mi2, M3, P4, P5, Mi6, Mi7]
 byzantine = [P1, Mi2, M3, P4, P5, Mi6, M7]
-oriental = [P1, Mi2, M3, P4, A4, M6, Mi7]
 raga = [P1, Mi2, Mi3, P4, P5, Mi6, Mi7]
+
+doubleHarmonicMajor = [P1, Mi2, M3, P4, P5, Mi6, M7]
+lydian_s2s6         = mode 2 doubleHarmonicMajor
+ultraphrygian       = mode 3 doubleHarmonicMajor
+gypsyMinor          = mode 4 doubleHarmonicMajor
+oriental            = mode 5 doubleHarmonicMajor
+ionian_s2s5         = mode 6 doubleHarmonicMajor
+locrian_bb3bb7      = mode 7 doubleHarmonicMajor
 
 -- Other scales.
 altered = [P1, Mi2, Mi3, M3, A4, Mi6, Mi7]
 wholeTone = [P1, M2, M3, A4, Mi6, Mi7]
 halfDiminished = mode 6 melodicMinor
+phrygianDominant = mode 5 harmonicMinor
+harmonicMajor = [P1, M2, M3, P4, P5, Mi6, M7]
