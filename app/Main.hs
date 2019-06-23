@@ -27,7 +27,7 @@ generate f (t, tmp) hCfg mCfg = do
 
   forM_ [(harm, 'h'), (mel, 'm'), (rhy, 'r')] $ \(m, c) ->
     writeToMidiFile (f ++ ('-':c:".mid")) tmp m
-  -- playDev 4 $ dyn PPP (harm :=: mel) -- :=: rhy
+  -- playDev 4 $ setDynamic PPP (harm :=: mel) -- :=: rhy
 
 -- Sonata in E Minor.
 sonata :: IO ()
